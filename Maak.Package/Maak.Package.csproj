@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>MakeConst</PackageId>
+    <PackageId>Maak</PackageId>
     <PackageVersion>1.0.0.0</PackageVersion>
-    <Authors>Youssef</Authors>
+    <Authors>Stanny Nuytkens</Authors>
     <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
     <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
     <PackageIconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</PackageIconUrl>
@@ -19,7 +19,7 @@
     <Description>MakeConst</Description>
     <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>
     <Copyright>Copyright</Copyright>
-    <PackageTags>MakeConst, analyzers</PackageTags>
+    <PackageTags>Maak, Analyzer, Roslyn, Code, Code Generation</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
     <NoPackageAnalysis>true</NoPackageAnalysis>
 

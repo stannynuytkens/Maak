@@ -1,4 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,18 +17,27 @@ namespace Maak.InitializeNew
 
         // You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
         // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Localizing%20Analyzers.md for more on localization
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle),
+            Resources.ResourceManager, typeof(Resources));
+
+        private static readonly LocalizableString MessageFormat =
+            new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager,
+                typeof(Resources));
+
+        private static readonly LocalizableString Description =
+            new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager,
+                typeof(Resources));
+
         private const string Category = "Usage";
 
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat,
+            Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
-             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.LocalDeclarationStatement);
@@ -35,63 +46,56 @@ namespace Maak.InitializeNew
         private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var localDeclaration = (LocalDeclarationStatementSyntax)context.Node;
-
-            // make sure the declaration isn't already const:
-            if (localDeclaration.Modifiers.Any(SyntaxKind.ConstKeyword))
-            {
+            var typeDeclaration = localDeclaration.Declaration.Type;
+            var symbolInfo = context.SemanticModel.GetSymbolInfo(typeDeclaration);
+            var typeSymbol = symbolInfo.Symbol;
+            
+            if(typeSymbol == null)
                 return;
-            }
 
-            var variableTypeName = localDeclaration.Declaration.Type;
-            var variableType = context.SemanticModel.GetTypeInfo(variableTypeName, context.CancellationToken).ConvertedType;
-
-            // Ensure that all variables in the local declaration have initializers that
-            // are assigned with constant values.
-            foreach (var initializer in localDeclaration.Declaration.Variables.Select(variable => variable.Initializer))
-            {
-                if (initializer == null)
-                    return;
-
-                var constantValue = context.SemanticModel.GetConstantValue(initializer.Value, context.CancellationToken);
-                if (!constantValue.HasValue)
-                    return;
-
-                // Ensure that the initializer value can be converted to the type of the
-                // local declaration without a user-defined conversion.
-                if (variableType != null)
-                {
-                    var conversion = context.SemanticModel.ClassifyConversion(initializer.Value, variableType);
-                    if (!conversion.Exists || conversion.IsUserDefined)
-                        return;
-                }
-
-                // Special cases:
-                //  * If the constant value is a string, the type of the local declaration
-                //    must be System.String.
-                //  * If the constant value is null, the type of the local declaration must
-                //    be a reference type.
-                if (constantValue.Value is string)
-                {
-                    if (variableType != null && variableType.SpecialType != SpecialType.System_String)
-                        return;
-                }
-                else if (variableType != null && variableType.IsReferenceType && constantValue.Value != null)
-                {
-                    return;
-                }
-            }
-
-            // Perform data flow analysis on the local declaration.
-            var dataFlowAnalysis = context.SemanticModel.AnalyzeDataFlow(localDeclaration);
-
-            if (localDeclaration.Declaration.Variables
-                .Select(variable => context.SemanticModel.GetDeclaredSymbol(variable, context.CancellationToken))
-                .Any(variableSymbol => dataFlowAnalysis != null && dataFlowAnalysis.WrittenOutside.Contains(variableSymbol)))
-            {
+            // Special case: Ensure that 'var' isn't actually an alias to another type. (e.g. using var = System.String).
+            var aliasInfo = context.SemanticModel.GetAliasInfo(typeDeclaration);
+            if (aliasInfo != null)
                 return;
-            }
 
-            context.ReportDiagnostic(Diagnostic.Create(Rule, context.Node.GetLocation()));
+            var namedSymbol = context.Compilation.GetTypeByMetadataName(typeSymbol.MetadataName);
+
+            if (namedSymbol?.TypeKind != TypeKind.Class)
+                return;
+
+            var hasDefaultConstructor = (namedSymbol?.Constructors)?.SingleOrDefault(c => !c.Parameters.Any()) != null;
+            var properties = namedSymbol?.GetMembers()
+                .Where(m => m.Kind == SymbolKind.Property
+                            && m.DeclaredAccessibility == Accessibility.Public
+                            && !((IPropertySymbol)m).IsReadOnly
+                            && !((IPropertySymbol)m).IsStatic)
+                .Select(m => new
+                {
+                    Name = m.Name,
+                    Type = ((IPropertySymbol)m).Type
+                })
+                .ToList();
+            var hasValidProperties = properties?.Any() != false;
+
+            if (!hasValidProperties)
+                return;
+          
+            var initializerExpressions = (localDeclaration.Declaration.Variables.FirstOrDefault()?.Initializer?.Value
+                    as ObjectCreationExpressionSyntax)?.Initializer?.Expressions.ToList();
+            
+            // no initializer { } found and no default constructor
+            if(initializerExpressions == null && !hasDefaultConstructor)
+                return;
+
+            var except = properties.Select(p => p.Name)
+                .Except(initializerExpressions?.Select(e => (e as AssignmentExpressionSyntax)?.Left.ToString()) ?? new List<string>())
+                .ToList();
+            
+            // all properties already exist in the initializer
+            if(except.Count == 0)
+                return;
+            
+            context.ReportDiagnostic(Diagnostic.Create(Rule, localDeclaration.Declaration.GetLocation()));
         }
     }
 }

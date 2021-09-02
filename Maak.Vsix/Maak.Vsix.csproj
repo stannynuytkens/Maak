@@ -36,6 +36,7 @@
     <ProjectReference Include="..\Maak.CodeFixes\Maak.CodeFixes.csproj" />
     <ProjectReference Include="..\Maak.InitializeNew\Maak.InitializeNew.csproj" />
     <ProjectReference Include="..\Maak.MakeConst\Maak.MakeConst.csproj" />
+    <ProjectReference Include="..\Maak.ModelBuilder\Maak.ModelBuilder.csproj" />
   </ItemGroup>
 
 

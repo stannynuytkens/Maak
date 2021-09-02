@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using Bogus;
 
-namespace HR.MobileForms.Application.Shared
+namespace Maak.Shared
 {
 	[ExcludeFromCodeCoverage]
     public class GenericModelBuilder<T> where T : class

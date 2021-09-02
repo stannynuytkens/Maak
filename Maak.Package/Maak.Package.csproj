@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <PackageId>Maak</PackageId>
-    <PackageVersion>1.0.0.0</PackageVersion>
+    <PackageVersion>1.0.2.0</PackageVersion>
     <Authors>Stanny Nuytkens</Authors>
     <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
     <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
@@ -25,6 +25,8 @@
     <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
 
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
+
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,50 +37,40 @@
     <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <PackageReference Include="Bogus" Version="33.0.2" PrivateAssets="All" IncludeInPackage="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Generated" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Generated\GenericModelBuilder.cs" />
-    <Content Include="Generated\GenericModelBuilder.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  </ItemGroup>-->
 
   <Target Name="_AddAnalyzersToOutput">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)\Maak.MakeConst.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(OutputPath)\Maak.InitializeNew.dll" PackagePath="analyzers/dotnet/cs" />
+	  <TfmSpecificPackageFile Include="$(OutputPath)\Maak.ModelBuilder.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(OutputPath)\Maak.CodeFixes.dll" PackagePath="analyzers/dotnet/cs" />
     </ItemGroup>
   </Target>
 
-  <Target Name="AddNuGetDlls" BeforeTargets="_GetPackageFiles">
-    <!-- Merge the collection of PackageReference and Assemblies using the NuGetPackageId key.
-         This produces a new list containing the DLL path and the "IncludeInPackage" metadata-->
+  <!--<Target Name="AddNuGetDlls" BeforeTargets="_GetPackageFiles">
+    --><!-- Merge the collection of PackageReference and Assemblies using the NuGetPackageId key.
+         This produces a new list containing the DLL path and the "IncludeInPackage" metadata--><!--
     <JoinItems Left="@(ResolvedCompileFileDefinitions)" LeftKey="NuGetPackageId" LeftMetadata="*" Right="@(PackageReference)" RightKey="" RightMetadata="*" ItemSpecToUse="Left">
       <Output TaskParameter="JoinResult" ItemName="_PackagesToPack" />
     </JoinItems>
 
     <ItemGroup>
-      <!-- Remove NETStandard DLLs -->
+      --><!-- Remove NETStandard DLLs --><!--
       <_PackagesToPack Remove="@(_PackagesToPack)" Condition="%(NuGetPackageId) == 'NETStandard.Library'" />
     </ItemGroup>
 
     <Message Importance="High" Text="Adding DLLs from the following packages: @(_PackagesToPack->'%(NuGetPackageId)')" />
 
     <ItemGroup>
-      <!-- Update the collection of items to pack with the DLLs from the NuGet packages -->
+      --><!-- Update the collection of items to pack with the DLLs from the NuGet packages --><!--
       <None Include="@(_PackagesToPack)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-      <!-- Add the DLL produced by the current project to the NuGet package -->
-      <!-- <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />-->
+      --><!-- Add the DLL produced by the current project to the NuGet package --><!--
+      --><!-- <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />--><!--
     </ItemGroup>
-  </Target>
+  </Target>-->
   
 </Project>

@@ -23,14 +23,15 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeSourceFilesProjectOutputGroup>true</IncludeSourceFilesProjectOutputGroup>
-
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
-
     <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Maak.CodeFixes\Maak.CodeFixes.csproj" />
+    <ProjectReference Include="..\Maak.InitializeNew\Maak.InitializeNew.csproj" />
+    <ProjectReference Include="..\Maak.MakeConst\Maak.MakeConst.csproj" />
+    <ProjectReference Include="..\Maak.ModelBuilder\Maak.ModelBuilder.csproj" />
   </ItemGroup>
 
   <ItemGroup>

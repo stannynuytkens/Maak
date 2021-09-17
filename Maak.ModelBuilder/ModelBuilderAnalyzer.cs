@@ -40,62 +40,21 @@ namespace Maak.ModelBuilder
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.LocalDeclarationStatement);
+
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
         }
 
-        private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            var localDeclaration = (LocalDeclarationStatementSyntax)context.Node;
-            var typeDeclaration = localDeclaration.Declaration.Type;
-            var symbolInfo = context.SemanticModel.GetSymbolInfo(typeDeclaration);
-            var typeSymbol = symbolInfo.Symbol;
+            // TODO: Replace the following code with your own analysis, generating Diagnostic objects for any issues you find
+            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+            var baseType = namedTypeSymbol.BaseType;
+            if (baseType.Name.StartsWith("GenericModelBuilder") && baseType.IsGenericType)
+            {
+                var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
 
-            if (typeSymbol == null)
-                return;
-
-            // Special case: Ensure that 'var' isn't actually an alias to another type. (e.g. using var = System.String).
-            var aliasInfo = context.SemanticModel.GetAliasInfo(typeDeclaration);
-            if (aliasInfo != null)
-                return;
-
-            var namedSymbol = context.Compilation.GetTypeByMetadataName(typeSymbol.MetadataName);
-
-            if (namedSymbol?.TypeKind != TypeKind.Class)
-                return;
-
-            var hasDefaultConstructor = (namedSymbol?.Constructors)?.SingleOrDefault(c => !c.Parameters.Any()) != null;
-            var properties = namedSymbol?.GetMembers()
-                .Where(m => m.Kind == SymbolKind.Property
-                            && m.DeclaredAccessibility == Accessibility.Public
-                            && !((IPropertySymbol)m).IsReadOnly
-                            && !((IPropertySymbol)m).IsStatic)
-                .Select(m => new
-                {
-                    m.Name,
-                    ((IPropertySymbol)m).Type
-                })
-                .ToList();
-            var hasValidProperties = properties?.Any() != false;
-
-            if (!hasValidProperties)
-                return;
-
-            var initializerExpressions = (localDeclaration.Declaration.Variables.FirstOrDefault()?.Initializer?.Value
-                    as ObjectCreationExpressionSyntax)?.Initializer?.Expressions.ToList();
-
-            // no initializer { } found and no default constructor
-            if (initializerExpressions == null && !hasDefaultConstructor)
-                return;
-
-            var except = properties.Select(p => p.Name)
-                .Except(initializerExpressions?.Select(e => (e as AssignmentExpressionSyntax)?.Left.ToString()) ?? new List<string>())
-                .ToList();
-
-            // all properties already exist in the initializer
-            if (except.Count == 0)
-                return;
-
-            context.ReportDiagnostic(Diagnostic.Create(Rule, localDeclaration.Declaration.GetLocation()));
+                context.ReportDiagnostic(diagnostic);
+            }
         }
     }
 }

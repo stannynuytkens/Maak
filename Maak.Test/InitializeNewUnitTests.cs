@@ -73,6 +73,8 @@ class Program
     {
         var myClass = new MyClass
         {
+            Age = 0,
+            Length = null,
             Name = null
         };
     }

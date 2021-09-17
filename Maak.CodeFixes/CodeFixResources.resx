@@ -124,4 +124,7 @@
   <data name="InitializeNewTitle" xml:space="preserve">
     <value>Initialize with properties</value>
   </data>
+  <data name="ModelBuilderTitle" xml:space="preserve">
+    <value>Create a modelbuilder</value>
+  </data>
 </root>

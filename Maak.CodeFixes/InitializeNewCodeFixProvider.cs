@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Maak.InitializeNew;
-using MakeConst;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -50,6 +49,7 @@ namespace Maak.CodeFixes
                 diagnostic);
         }
 
+        // http://roslynquoter.azurewebsites.net/
         private static async Task<Document> InitializeNewAsync(CodeFixContext context,
             LocalDeclarationStatementSyntax localDeclaration,
             CancellationToken cancellationToken)
@@ -66,12 +66,16 @@ namespace Maak.CodeFixes
             var namedSymbol = semanticModel.Compilation.GetTypeByMetadataName(typeSymbol.MetadataName);
 
             var hasDefaultConstructor = (namedSymbol?.Constructors)?.SingleOrDefault(c => !c.Parameters.Any()) != null;
+            // should use SymbolEqualityComparer(.Default) here?
+
+#pragma warning disable RS1024 // Compare symbols correctly
             var properties = namedSymbol?.GetMembers()
                 .Where(m => m.Kind == SymbolKind.Property
                             && m.DeclaredAccessibility == Accessibility.Public
                             && !((IPropertySymbol)m).IsReadOnly
                             && !((IPropertySymbol)m).IsStatic)
                 .ToDictionary(k => k.Name, v => ((IPropertySymbol)v).Type);
+#pragma warning restore RS1024 // Compare symbols correctly
 
             var hasValidProperties = properties?.Any() != false;
 
@@ -127,7 +131,7 @@ namespace Maak.CodeFixes
             // // Add an annotation to format the new local declaration.
             // LocalDeclarationStatementSyntax formattedLocal = newLocal.WithAdditionalAnnotations(Formatter.Annotation);
 
-            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);           
 
             // (localDeclaration.Declaration.Variables.FirstOrDefault()?.Initializer?.Value
             //     as ObjectCreationExpressionSyntax)?.Initializer?.Expressions.Replace();

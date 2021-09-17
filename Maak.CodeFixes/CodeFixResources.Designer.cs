@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MakeConst {
+namespace Maak.CodeFixes {
     using System;
     
     
@@ -75,6 +75,15 @@ namespace MakeConst {
         internal static string MakeConstTitle {
             get {
                 return ResourceManager.GetString("MakeConstTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create a modelbuilder.
+        /// </summary>
+        internal static string ModelBuilderTitle {
+            get {
+                return ResourceManager.GetString("ModelBuilderTitle", resourceCulture);
             }
         }
     }

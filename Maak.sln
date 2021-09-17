@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Output", "Output", "{7DFD3C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maak.Shared", "Maak.Shared\Maak.Shared.csproj", "{6C0A7561-5DCD-4C16-8C81-C6DD534033E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maak.ModelBuilder", "Maak.ModelBuilder\Maak.ModelBuilder.csproj", "{55E222AA-948A-4BBE-8F96-F109A3195D4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maak.ModelBuilder", "Maak.ModelBuilder\Maak.ModelBuilder.csproj", "{55E222AA-948A-4BBE-8F96-F109A3195D4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

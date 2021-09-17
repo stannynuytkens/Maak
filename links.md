@@ -1,0 +1,9 @@
+https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/tutorials/how-to-write-csharp-analyzer-code-fix
+https://github.com/dotnet/samples/tree/main/csharp/roslyn-sdk/Tutorials/MakeConst
+https://roslyn-analyzers.readthedocs.io/en/latest/create-nuget-package.html
+http://roslynquoter.azurewebsites.net/
+https://csharp.hotexamples.com/examples/Microsoft.CodeAnalysis.CSharp.Syntax/VariableDeclarationSyntax/-/php-variabledeclarationsyntax-class-examples.html
+https://riptutorial.com/roslyn/example/21061/get-the-type-of--var-
+https://route2roslyn.netlify.app/generating-default-values/
+https://stackoverflow.com/questions/34532515/how-to-generate-initialization-of-class-fields-with-roslyn
+https://dennistretyakov.com/writing-first-roslyn-analyzer-and-codefix-provider
